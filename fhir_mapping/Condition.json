@@ -1,6 +1,5 @@
 {
   "resourceType": "Condition",
-  "id": "1",  // diagnostico_id
   "clinicalStatus": {
     "coding": [
       {
@@ -13,16 +12,16 @@
     "coding": [
       {
         "system": "http://hl7.org/fhir/sid/icd-10",
-        "code": "I10",  // diagnostico_ingreso
-        "display": "Essential (primary) hypertension"
+        "code": "I10"
       }
-    ]
+    ],
+    "text": "Hipertensión esencial (I10)"
   },
   "subject": {
-    "reference": "Patient/1001001001"
+    "reference": "Patient/1"
   },
   "encounter": {
-    "reference": "Encounter/1"  // FK atencion_id
+    "reference": "Encounter/4"
   },
   "recordedDate": "2025-10-01T09:00:00Z"
 }

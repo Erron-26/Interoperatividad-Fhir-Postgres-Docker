@@ -116,7 +116,7 @@ CREATE TABLE usuario (
     pais_nacionalidad VARCHAR(100) NOT NULL,     -- Recomendado: almacenar alpha-2 o alpha-3
     nombre_completo   VARCHAR(255) NOT NULL,
     fecha_nacimiento  DATE NOT NULL,
-    edad              INT GENERATED ALWAYS AS (EXTRACT(YEAR FROM age(current_date, fecha_nacimiento))) STORED,
+    edad              INT,
     sexo              VARCHAR(10) NOT NULL,
     genero            VARCHAR(20),
     ocupacion         VARCHAR(100),
@@ -130,6 +130,23 @@ CREATE TABLE usuario (
     CONSTRAINT chk_usuario_sexo CHECK (sexo IN ('M','F','Intersex')),
     CONSTRAINT chk_usuario_zona CHECK (zona_residencia IS NULL OR zona_residencia IN ('Urbana','Rural','Dispersa'))
 );
+
+CREATE OR REPLACE FUNCTION hcd.calculate_usuario_edad()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.edad := EXTRACT(YEAR FROM age(CURRENT_DATE, NEW.fecha_nacimiento))::int;
+  RETURN NEW;
+END;
+$$;
+
+-- trigger que llama la función antes de INSERT o UPDATE
+CREATE TRIGGER trg_usuario_set_edad
+BEFORE INSERT OR UPDATE ON hcd.usuario
+FOR EACH ROW
+EXECUTE FUNCTION hcd.calculate_usuario_edad();
+
 
 -- Buenas prácticas: referenciar países a ISO-3166 (alpha-2/3) aunque la columna sea VARCHAR(100)
 ALTER TABLE usuario
@@ -163,6 +180,14 @@ CREATE INDEX idx_atencion_doc ON atencion (documento_id);
 CREATE INDEX idx_atencion_fecha ON atencion (fecha_ingreso);
 
 -- 2.3 TECNOLOGÍA EN SALUD (MedicationAdministration / Procedure)
+-- 2.6 PROFESIONAL DE SALUD (Practitioner)
+DROP TABLE IF EXISTS profesional_salud CASCADE;
+CREATE TABLE profesional_salud (
+    id_personal_salud UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nombre            VARCHAR(255) NOT NULL,
+    especialidad      VARCHAR(100) NOT NULL
+);
+
 DROP TABLE IF EXISTS tecnologia_salud CASCADE;
 CREATE TABLE tecnologia_salud (
     tecnologia_id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -229,13 +254,7 @@ CREATE TABLE egreso (
 );
 CREATE INDEX idx_egreso_atencion ON egreso (atencion_id);
 
--- 2.6 PROFESIONAL DE SALUD (Practitioner)
-DROP TABLE IF EXISTS profesional_salud CASCADE;
-CREATE TABLE profesional_salud (
-    id_personal_salud UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    nombre            VARCHAR(255) NOT NULL,
-    especialidad      VARCHAR(100) NOT NULL
-);
+
 CREATE INDEX idx_prof_nombre ON profesional_salud (nombre);
 
 -- =====================================================================

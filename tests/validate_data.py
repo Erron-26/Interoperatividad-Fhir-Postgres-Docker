@@ -24,13 +24,21 @@ timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 report_path = f"reports/ge_report_{timestamp}.html"
 
 # 🐘 Conexión a PostgreSQL
+db_host = os.environ.get("DB_HOST", "localhost")
+db_user = os.environ.get("DB_USER", "postgres")
+db_pass = os.environ.get("DB_PASS", "postgres")
+db_name = os.environ.get("DB_NAME", "interop_db")
+
 conn = psycopg2.connect(
-    host="localhost",   # Cambia a "postgres" si ejecutas dentro del contenedor
-    port="5432",
-    dbname="interop_db",
-    user="postgres",
-    password="postgres"
+    host=db_host,
+    user=db_user,
+    password=db_pass,
+    dbname=db_name,
+    port=5432
 )
+
+with conn.cursor() as cur:
+    cur.execute("SET search_path TO hcd, public;")
 
 # ✨ Función auxiliar para ejecutar queries y devolver DataFrame
 def query_df(sql):

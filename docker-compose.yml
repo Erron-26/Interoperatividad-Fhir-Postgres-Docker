@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:14
@@ -39,3 +37,19 @@ services:
     volumes:
       - .:/work
       - ./reports:/reports
+    environment:
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: interop_db
+    command: |
+      bash -lc '
+      set -ex
+      pip install --no-cache-dir psycopg2-binary pandas matplotlib
+      # esperar hasta 30s a que el puerto 5432 del DB responda usando /dev/tcp
+      for i in $(seq 1 30); do
+        (echo > /dev/tcp/${DB_HOST:-postgres}/5432) >/dev/null 2>&1 && { echo "db up"; break; } || { echo "waiting db"; sleep 1; }
+      done
+      python tests/validate_data.py
+      tail -f /dev/null
+      '

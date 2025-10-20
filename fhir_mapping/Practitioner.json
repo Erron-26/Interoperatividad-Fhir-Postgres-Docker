@@ -1,6 +1,6 @@
 {
   "resourceType": "Practitioner",
-  "id": "1",  // id_personal_salud
+  "id": "1", 
   "identifier": [
     {
       "system": "http://example.org/practitioner-id",
@@ -10,13 +10,13 @@
   "name": [
     {
       "use": "official",
-      "text": "Dr. Luis Pineda"  // nombre
+      "text": "Dr. Luis Pineda"  
     }
   ],
   "qualification": [
     {
       "code": {
-        "text": "Emergency Medicine"  // especialidad
+        "text": "Emergency Medicine"  
       }
     }
   ]
